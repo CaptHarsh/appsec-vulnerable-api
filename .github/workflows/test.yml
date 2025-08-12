@@ -17,10 +17,10 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
-        run: docker build -t vulnerable-app ./vulnerable-app
+        run: docker build -t appsec-project-vulnerable-app  ./vulnerable-app
 
       - name: Run Docker container
-        run: docker run -d -p 8000:8000 --name vulnerable-app vulnerable-app
+        run: docker run -d -p 8000:8000 --name appsec-project-vulnerable-app  vulnerable-app
 
       - name: Wait for app to start
         run: |
@@ -52,3 +52,4 @@ jobs:
         run: |
           docker stop vulnerable-app
           docker rm vulnerable-app
+            echo "API tests completed successfully."
