@@ -1,0 +1,16 @@
+name: CI Security Pipeline
+on: [push, pull_request]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      app:
+        build: ./vulnerable-app
+        ports:
+          - 8080:8080
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run API Tests
+        run: |
+          cd api-tests
+          ./run_tests.sh
