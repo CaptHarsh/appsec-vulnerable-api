@@ -1,8 +1,9 @@
-name: API Tests CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -34,8 +35,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest requests
 
-      - name: Build and start Docker containers
-        run: docker-compose up -d --build
+      - name: Build Docker image
+        run: docker build -t vulnerable-app ./vulnerable-app
+
+      - name: Run container
+        run: docker run -d -p 8000:8000 --name appsec-project-vulnerable-app vulnerable-app
 
       - name: Wait for app to be ready
         run: |
