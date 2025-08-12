@@ -10,36 +10,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:20.10.16-dind
-        privileged: true
-        options: >-
-          --health-cmd="curl --fail http://localhost:8000/ || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 8000:8000
-
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest requests
+      - name: Build Docker image
+        run: docker build -t vulnerable-app ./vulnerable-app
 
-      - name: Build and start Docker containers
-        run: |
-          docker-compose up -d --build
+      - name: Run Docker container
+        run: docker run -d -p 8000:8000 --name vulnerable-app vulnerable-app
 
-      - name: Wait for app to be ready
+      - name: Wait for app to start
         run: |
           for i in {1..30}; do
             if curl -sSf http://localhost:8000/; then
@@ -52,6 +35,20 @@ jobs:
           echo "App did not start in time" >&2
           exit 1
 
-      - name: Run API tests
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
         run: |
-          pytest api-tests/test_api.py
+          python -m pip install --upgrade pip
+          pip install pytest requests
+
+      - name: Run API tests
+        run: pytest api-tests/test_api.py
+
+      - name: Stop and remove container
+        run: |
+          docker stop vulnerable-app
+          docker rm vulnerable-app
