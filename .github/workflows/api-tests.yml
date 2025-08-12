@@ -1,0 +1,29 @@
+name: API Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      vulnerable-app:
+        image: your-dockerhub-username/appsec-project:latest
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd="curl --fail http://localhost:8000/ || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install requests and pytest
+        run: pip install requests pytest
+      - name: Run API tests
+        run: |
+          pytest api-tests/test_api.py
